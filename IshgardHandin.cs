@@ -48,9 +48,10 @@ namespace Ishgard
             if (HWDSupply.IsOpen)
             {
                 if (HWDSupply.ClassSelected != job)
+                {
                     HWDSupply.ClassSelected = job;
-                
-
+                    await Coroutine.Sleep(1000);
+                }
                 //var item = InventoryManager.FilledSlots.FirstOrDefault(i => i.RawItemId == itemId);
 
                 foreach (var item in InventoryManager.FilledSlots.Where(i => i.RawItemId == itemId))
