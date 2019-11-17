@@ -4,10 +4,12 @@ using Buddy.Coroutines;
 using Clio.Utilities;
 using ff14bot;
 using ff14bot.Behavior;
-using ff14bot.Managers;
+ using ff14bot.Enums;
+ using ff14bot.Managers;
 using ff14bot.Navigation;
 using ff14bot.NeoProfiles;
-using ff14bot.Pathing;
+ using ff14bot.Objects;
+ using ff14bot.Pathing;
 using ff14bot.RemoteWindows;
 
 namespace Ishgard
@@ -15,27 +17,40 @@ namespace Ishgard
     public class IshgardHandin
     {
 
-        public uint NpcId = 1031690;
+        //public uint NpcId = 1031690;
+        public uint[] ids = new uint[] {1031690, 1031677};
+        private GameObject Npc => GameObjectManager.GameObjects.FirstOrDefault(i => ids.Contains(i.NpcId) && i.IsVisible);
         public string EnglishName = "Potkin";
         public uint ZoneId;
         public uint FoundationZoneId;
         public uint AetheryteId = 70;
         public async Task<bool> HandInItem(uint itemId, int index, int job)
         {
-            if (!HWDSupply.IsOpen && GameObjectManager.GetObjectByNPCId(NpcId) == null)
+            //GameObjectType.EventNpc;
+            
+            if (!HWDSupply.IsOpen && Npc == null)
             {
                 await GetToNpc();
             }
             
-            if (!HWDSupply.IsOpen && GameObjectManager.GetObjectByNPCId(NpcId).Location.Distance(Core.Me.Location) > 5f)
+            if (!HWDSupply.IsOpen && Npc.Location.Distance(Core.Me.Location) > 5f)
             {
-                await GetToNpc();
+               // NpcId = Npc.NpcId;
+                var _target = Npc.Location;
+                Navigator.PlayerMover.MoveTowards(_target);
+                while (_target.Distance2D(Core.Me.Location) >= 4)
+                {
+                    Navigator.PlayerMover.MoveTowards(_target);
+                    await Coroutine.Sleep(100);
+                }
+                Navigator.PlayerMover.MoveStop();
+                await Coroutine.Sleep(1000);
             }
 
             if (!HWDSupply.IsOpen)
             {
-                NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
-                GameObjectManager.GetObjectByNPCId(NpcId).Interact();
+                //NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
+                Npc.Interact();
                 await Coroutine.Wait(5000, () => HWDSupply.IsOpen || Talk.DialogOpen);
                 await Coroutine.Sleep(1000);
 
@@ -140,8 +155,8 @@ namespace Ishgard
                 await CommonTasks.MoveAndStop(
                     new MoveToParameters(GameObjectManager.GetObjectByNPCId(NpcId).Location,
                         "Moving toward NPC"), 5f, true);*/
-            NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
-            if (GameObjectManager.GetObjectByNPCId(NpcId).Location.Distance(Core.Me.Location) > 5f)
+            //NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
+            if (Npc.Location.Distance(Core.Me.Location) > 5f)
             {
                 var _target = new Vector3(10.58188f, -15.96282f, 163.8702f);
                 Navigator.PlayerMover.MoveTowards(_target);
@@ -154,7 +169,7 @@ namespace Ishgard
                 //await Buddy.Coroutines.Coroutine.Sleep(1500); // (again, probably better to just wait until distance to destination is < 2.0f or something)
                 Navigator.PlayerMover.MoveStop();
                 
-                _target = GameObjectManager.GetObjectByNPCId(NpcId).Location;
+                _target = Npc.Location;
                 Navigator.PlayerMover.MoveTowards(_target);
                 while (_target.Distance2D(Core.Me.Location) >= 4)
                 {
@@ -166,7 +181,7 @@ namespace Ishgard
                 Navigator.PlayerMover.MoveStop();
             }
 
-            return GameObjectManager.GetObjectByNPCId(NpcId).Location.Distance(Core.Me.Location) <= 5f;
+            return Npc.Location.Distance(Core.Me.Location) <= 5f;
         }
 
     }

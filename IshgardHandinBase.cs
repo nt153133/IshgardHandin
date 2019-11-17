@@ -13,7 +13,7 @@ using TreeSharp;
 
 namespace IshgardHandinBase
 {
-    public class IshgardHandinBase : AsyncBotBase
+    public class IshgardHandinBase : BotBase
     {
         private Composite _root;
         public override string Name => "Ishgard Handin";
@@ -26,11 +26,27 @@ namespace IshgardHandinBase
 
         public override bool WantButton { get; } = false;
         
-        public override Task AsyncRoot()
+
+        
+        private async Task<bool> Run()
         {
-            return Handin();
+            await Handin();
+
+            TreeRoot.Stop("Stop Requested");
+            return true;
+        }
+        public override void Start()
+        {
+
+            _root = new ActionRunCoroutine(r => Run());
+  
         }
         
+        public override void Stop()
+        {
+            _root = null;
+
+        }
         public async Task<bool> Handin()
         {
             Navigator.NavigationProvider = new ServiceNavigationProvider();
@@ -204,7 +220,7 @@ namespace IshgardHandinBase
                 windowByName.SendAction(1,3, UInt64.MaxValue);
             }
 
-            TreeRoot.Stop("Stop Requested");
+            //TreeRoot.Stop("Stop Requested");
             return true;
         }
     }
