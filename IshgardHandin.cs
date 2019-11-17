@@ -16,6 +16,7 @@ namespace Ishgard
     {
 
         public uint NpcId = 1031690;
+        public string EnglishName = "Potkin";
         public uint ZoneId;
         public uint FoundationZoneId;
         public uint AetheryteId = 70;
@@ -33,6 +34,7 @@ namespace Ishgard
 
             if (!HWDSupply.IsOpen)
             {
+                NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
                 GameObjectManager.GetObjectByNPCId(NpcId).Interact();
                 await Coroutine.Wait(5000, () => HWDSupply.IsOpen || Talk.DialogOpen);
                 await Coroutine.Sleep(1000);
@@ -111,9 +113,11 @@ namespace Ishgard
                 await Coroutine.Wait(10000, () => WorldManager.ZoneId == FoundationZoneId);
                 await Coroutine.Sleep(3000);
 
-
+                await Coroutine.Wait(10000, () => GameObjectManager.GetObjectByNPCId(70) != null);
                 await Coroutine.Sleep(3000);
+                
                 var unit = GameObjectManager.GetObjectByNPCId(70);
+                unit.Target();
                 unit.Interact();
                 await Coroutine.Sleep(1000);
                 await Coroutine.Wait(5000, () => SelectString.IsOpen);
@@ -136,7 +140,7 @@ namespace Ishgard
                 await CommonTasks.MoveAndStop(
                     new MoveToParameters(GameObjectManager.GetObjectByNPCId(NpcId).Location,
                         "Moving toward NPC"), 5f, true);*/
-
+            NpcId = GameObjectManager.GameObjects.First(i => i.EnglishName == EnglishName).NpcId;
             if (GameObjectManager.GetObjectByNPCId(NpcId).Location.Distance(Core.Me.Location) > 5f)
             {
                 var _target = new Vector3(10.58188f, -15.96282f, 163.8702f);
